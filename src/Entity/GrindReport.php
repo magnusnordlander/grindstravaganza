@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\RelativeMeasuringPoint;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -11,6 +12,13 @@ use Symfony\Component\Uid\Uuid;
  */
 class GrindReport
 {
+    static $typeMap = [
+        0 => 'Manual',
+        1 => 'Purge',
+        2 => 'Grind by time',
+        3 => 'Grind by weight',
+    ];
+
     /**
      * @ORM\Column(type="uuid", nullable=false)
      * @ORM\Id()
@@ -25,7 +33,7 @@ class GrindReport
 
     /**
      * @var Grinder
-     * @ORM\ManyToOne(targetEntity="Grinder")
+     * @ORM\ManyToOne(targetEntity="Grinder", inversedBy="reports")
      * @ORM\JoinColumn(name="grinder_id", referencedColumnName="id")
      */
     protected $grinder;
@@ -214,6 +222,77 @@ class GrindReport
 
     public function getMeasuringPoints()
     {
+        if ($this->measuringPoints === null) {
+            $this->measuringPoints = [];
+            foreach ($this->measuringData as $time => $raw) {
+                $this->measuringPoints[] = new MeasuringPoint($time, $raw);
+            }
+        }
+
         return $this->measuringPoints;
+    }
+
+    public function getId(): Uuid
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getDuration(): float
+    {
+        return ($this->endMillis - $this->startMillis) / 1000;
+    }
+
+    public function getTypeString(): string
+    {
+        return self::$typeMap[$this->type];
+    }
+
+    public function getGroundWeight(): ?float
+    {
+        if (count($this->getMeasuringPoints()) == 0) {
+            return null;
+        }
+
+        return (array_slice($this->getMeasuringPoints(), -1, 1)[0]->getRawData() - $this->tareValue) / $this->scaleCalibration;
+    }
+
+    /**
+     * @return RelativeMeasuringPoint[]
+     */
+    public function getRelativePoints(): array
+    {
+        $mps = $this->getMeasuringPoints();
+
+        return array_map(function(MeasuringPoint $mp) use ($mps) {
+            return new RelativeMeasuringPoint($mp, $this->tareValue, $this->scaleCalibration, $mps[0]);
+        }, $mps);
+    }
+
+    public function getTargetUnit(): string
+    {
+        return $this->type == 3 ? 'g' : 's';
+    }
+
+    public function getTarget(): ?float
+    {
+        if ($this->temporaryTarget > 0) {
+            return $this->temporaryTarget / 1000;
+        }
+
+        switch ($this->type) {
+            case 1:
+                return $this->purgeTargetTime / 1000;
+            case 2:
+                return $this->grindTargetTime / 1000;
+            case 3:
+                return $this->grindTargetWeight / 1000;
+        }
+
+        return null;
     }
 }

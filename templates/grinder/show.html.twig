@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <small><a href="{{ path('grinder_list') }}">&laquo; Back</a></small>
+
+    <h1>{{ grinder.name }}</h1>
+    <strong>MAC Address: {{ grinder.formattedMacAddress }}</strong>
+
+    <h2>Reports</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Time</th>
+            <th>Weight</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for report in grinder.reports %}
+            <tr>
+                <td><a href="{{ path('report_show', {'grinder': grinder.id, 'id': report.id}) }}">{{ report.createdAt|date("Y-m-d H:i:s") }}</a></td>
+                <td>{{ report.typeString }}</td>
+                <td>{{ report.duration }}<td>
+                <td>{{ report.groundWeight }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

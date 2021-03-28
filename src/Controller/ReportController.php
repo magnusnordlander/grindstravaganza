@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\GrindReport;
 use App\ReportParser;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,6 +39,17 @@ class ReportController extends AbstractController
         $this->serializer = $serializer;
         $this->parser = $parser;
         $this->em = $em;
+    }
+
+    /**
+     * @Route("/grinders/{grinder}/report/{id}", name="report_show")
+     * @ParamConverter("report")
+     */
+    public function show(GrindReport $report)
+    {
+        return $this->render("report/show.html.twig", [
+            'report' => $report
+        ]);
     }
 
     /**

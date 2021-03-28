@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Grindstravaganza!</h1>
+
+    <h2>Grinders</h2>
+    <table>
+        <thead>
+        <tr>
+            <td>MAC address</td>
+            <td>Manufacturer</td>
+            <td>Model</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for grinder in grinders %}
+            <tr>
+                <td><a href="{{ path('grinder_show', {'id': grinder.id}) }}">{{ grinder.formattedMacAddress }}</a></td>
+                <td>{{ grinder.manufacturer }}</td>
+                <td>{{ grinder.model }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

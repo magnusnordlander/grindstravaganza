@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <small><a href="{{ path('grinder_show', {'id': report.grinder.id}) }}">&laquo; Back</a></small>
+
+    <h1>{{ report.typeString }}: {{ report.createdAt|date("Y-m-d H:i") }}</h1>
+    <strong>{{ report.grinder.manufacturer }} {{ report.grinder.model }}</strong>
+
+    <h2>Grind parameters</h2>
+    <dl>
+        <dt>Duration</dt>
+        <dd>{{ report.duration|round(2) }} s</dd>
+        {% if report.type != 0 %}
+        <dt>Target</dt>
+        <dd>
+            {{ report.target }} {{ report.targetUnit }}
+        </dd>
+        {% endif %}
+    </dl>
+
+    <div style="width:600px; height: 400px">
+    <canvas id="myChart" width="600" height="400"></canvas>
+    </div>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for mp in report.relativePoints %}
+                        {{ mp.relativeSeconds|round(2) }},
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: "Weight",
+                    data: [
+                        {% for mp in report.relativePoints %}
+                        {{ mp.weight|round(2) }},
+                        {% endfor %}
+                    ],
+                }]
+            }
+        });
+    </script>
+
+    <h2>Grinder settings</h2>
+    <dl>
+        <dt>Purge target time</dt>
+        <dd>{{ report.purgeTargetTime/1000|round(2) }} s</dd>
+        <dt>Grind by time target</dt>
+        <dd>{{ report.grindTargetTime/1000|round(2) }} s</dd>
+        <dt>Grind by weight target</dt>
+        <dd>{{ report.grindTargetWeight/1000|round(2) }} g</dd>
+        <dt>Grinder productivity</dt>
+        <dd>{{ report.productivity/1000|round(2) }} g/s</dd>
+        <dt>Reaction compensation</dt>
+        <dd>{{ report.reactionTime/1000|round(2) }} s</dd>
+        <dt>Grinder productivity</dt>
+        <dd>{{ report.productivity/1000|round(2) }} g/s</dd>
+        <dt>Scale ADC calibration value</dt>
+        <dd>{{ report.scaleCalibration }}</dd>
+    </dl>
+
+    <h2>Weights</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Weight</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mp in report.relativePoints %}
+            <tr>
+                <td>{{ mp.relativeSeconds }}</td>
+                <td>{{ mp.weight|round(2) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

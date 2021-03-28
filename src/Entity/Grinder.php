@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use App\Repository\GrinderRepository;
@@ -41,6 +43,12 @@ class Grinder
     private $userId;
 
     /**
+     * @var GrindReport[]|Collection
+     * @ORM\OneToMany(targetEntity="GrindReport", mappedBy="grinder")
+     */
+    private $reports;
+
+    /**
      */
     public function __construct(Uuid $userId, string $mac, ?string $manufacturer = null, ?string $model = null)
     {
@@ -49,6 +57,7 @@ class Grinder
         $this->manufacturer = $manufacturer;
         $this->model = $model;
         $this->userId = $userId;
+        $this->reports = new ArrayCollection();
     }
 
     public function getUserId(): Uuid
@@ -71,5 +80,30 @@ class Grinder
         return $this->model;
     }
 
+    public function getId(): Uuid
+    {
+        return $this->id;
+    }
 
+    /**
+     * @return GrindReport[]|Collection
+     */
+    public function getReports(): Collection
+    {
+        return $this->reports;
+    }
+
+    public function getName(): string
+    {
+        if ($this->manufacturer && $this->model) {
+            return $this->manufacturer . ' ' . $this->model;
+        }
+
+        return $this->getFormattedMacAddress();
+    }
+
+    public function getFormattedMacAddress(): string
+    {
+        return strtoupper(implode(':', str_split($this->mac, 2)));
+    }
 }
