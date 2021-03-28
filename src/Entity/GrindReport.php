@@ -18,6 +18,12 @@ class GrindReport
     private $id;
 
     /**
+     * @var \DateTimeImmutable
+     * @ORM\Column(type="datetimetz_immutable", nullable=false)
+     */
+    private $createdAt;
+
+    /**
      * @var Grinder
      * @ORM\ManyToOne(targetEntity="Grinder")
      * @ORM\JoinColumn(name="grinder_id", referencedColumnName="id")
@@ -112,6 +118,7 @@ class GrindReport
         array $measuringPoints
     ) {
         $this->id = Uuid::v4();
+        $this->createdAt = new \DateTimeImmutable();
         $this->grinder = $grinder;
         $this->version = $version;
         $this->startMillis = $startMillis;
