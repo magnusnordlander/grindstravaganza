@@ -13,6 +13,7 @@ class ReportParser
     public function parseReport(string $report): GrindReport
     {
         $lines = explode("\n", $report);
+        $lines = array_filter($lines);
         preg_match("/C0FFEE:(?<version>\d+):(?<mac>[0-9a-f]+):(?<startMillis>\d+):(?<endMillis>\d+):(?<tareValue>[\d\-]+):(?<temporaryTarget>\d+):(?<grindTargetTime>\d+):(?<purgeTargetTime>\d+):(?<grindTargetWeight>\d+):(?<productivity>\d+):(?<scaleCalibration>[\d\.\-]+):(?<reactionTime>\d+):(?<type>\d+)$/", $lines[0], $matches);
 
         if (($matches['version'] ?? null) != 1) {
