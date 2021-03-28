@@ -4,13 +4,24 @@ declare(strict_types=1);
 namespace App;
 
 
-use App\Entity\Grinder;
 use App\Entity\GrindReport;
 use App\Entity\MeasuringPoint;
+use App\Repository\GrinderRepository;
+use Symfony\Component\Uid\Uuid;
 
 class ReportParser
 {
-    public function parseReport(string $report): GrindReport
+    /**
+     * @var GrinderRepository
+     */
+    private $grinderRepository;
+
+    public function __construct(GrinderRepository $grinderRepository)
+    {
+        $this->grinderRepository = $grinderRepository;
+    }
+
+    public function parseReport(Uuid $userId, string $report): GrindReport
     {
         $lines = explode("\n", $report);
         $lines = array_filter($lines);
@@ -32,7 +43,7 @@ class ReportParser
         }
 
         return new GrindReport(
-            new Grinder($matches['mac'], "Mazzer", "Major"),
+            $this->grinderRepository->findOrCreateByUserAndMac($userId, $matches['mac']),
             (int)$matches['version'],
             (int)$matches['startMillis'],
             (int)$matches['endMillis'],

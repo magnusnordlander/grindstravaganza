@@ -27,6 +27,4 @@ class MeasuringPoint
     {
         return $this->rawData;
     }
-
-
 }
